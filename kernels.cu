@@ -264,7 +264,7 @@ __global__ void hgemm_p2_kernel(
     B_tile[iin * 16 + iim] = B[(iin_start + iin) * K + (i + iim)];
     __syncthreads();
     for(size_t j = 0; j < 16; j++) {
-      C[(iim_start + iim) * N + (iin_start + iin)] = _hadd(C[(iim_start + iim) * N + (iin_start + iin)], _hmul(A_tile[iim * 16 + j], B_tile[iin * 16 + j]));
+      C[(iim_start + iim) * N + (iin_start + iin)] = __hadd(C[(iim_start + iim) * N + (iin_start + iin)], __hmul(A_tile[iim * 16 + j], B_tile[iin * 16 + j]));
     }
     __syncthreads();
   }
