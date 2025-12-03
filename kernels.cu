@@ -1,3 +1,5 @@
+%%writefile kernels.cu
+
 #include <iostream>
 #include <cassert>
 #include <vector>
@@ -46,7 +48,7 @@ __global__ void sgemm_p1_kernel(
     return;
   }
 
-  for(size_t i = 0; i < K, ++i) {
+  for(size_t i = 0; i < K; ++i) {
     C[iim * N + iin] += A[iim * K + i] * B[i * K + iin];
   }
 }
@@ -115,8 +117,8 @@ __global__ void hgemm_p1_kernel(
     return;
   }
 
-  for(size_t i = 0; i < K, ++i) {
-    C[iim * N + iin] += A[iim * K + i] * B[i * K + iin];
+  for(size_t i = 0; i < K; ++i) {
+    C[iim * N + iin] = __hadd(C[iim * N + iin], __hmul(A[iim * K + i], B[i * K + iin]));
   }
 }
 
@@ -182,7 +184,7 @@ __global__ void sgemm_p2_kernel(
   size_t iim_start = blockIdx.x * 16 / N;
   size_t stages = K / 16;
   for (size_t i = 0; i < stages; ++i) {
-    // size_t 
+    // size_t
     // A_tile[iin_start + threadIdx.x  ]
   }
 }
