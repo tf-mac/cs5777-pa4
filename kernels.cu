@@ -463,8 +463,17 @@ __global__ void hgemm_p4_kernel(
   const size_t N,
   const size_t K
 ) {
-  /* TODO: (4.1) */
-  assert(false); // not implemented yet
+  wmma::fragment<wmma::matrix_a, 16, 16, 16, __half, wmma::mem_row_major> a;
+  wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::mem_col_major> b;
+  wmma::fragment<wmma::accumulator, 16, 16, 16, float> c;
+
+  wmma::fill_fragment(c, 0);
+  wmma::load_matrix_sync(a, A, K);
+  wmma::load_matrix_sync(b, B, K);
+
+  wmma::mma_sync(c, a, b, c);
+
+  wmma::store_matrix_sync(C, c, N, wmma::mem_row_major);
 }
 
 // C += A @ B.t()
