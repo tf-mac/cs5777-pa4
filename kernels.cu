@@ -179,13 +179,13 @@ __global__ void sgemm_p2_kernel(
 ) {
   __shared__ float A_tile[256];
   __shared__ float B_tile[256];
-  size_t iin_start = blockIdx.x * 16 % N;
-  size_t iim_start = blockIdx.x * 16 / N;
+  size_t iin_start = blockIdx.x * 16
+  size_t iim_start = blockIdx.y * 16
   size_t iin = threadIdx.x % 16;
   size_t iim = threadIdx.x / 16;
   for (size_t i = 0; i < K; i += 16) {
     A_tile[iim * 16 + iin] = A[(iim_start + iim) * K + (i + iin)];
-    B_tile[iin * 16 + iim] = A[(iin_start + iin) * K + (i + iim)];
+    B_tile[iin * 16 + iim] = B[(iin_start + iin) * K + (i + iim)];
     __syncthreads();
     for(size_t j = 0; j < 16; j++) {
       C[(iim_start + iim) * K + (iin_start + iin)] += A_tile[iim * 16 + j] * B_tile[iin * 16 + j];
