@@ -253,8 +253,21 @@ __global__ void hgemm_p2_kernel(
   const size_t N,
   const size_t K
 ) {
-  /* TODO: (2.3) */
-  assert(false); // not implemented yet
+  __shared__ __half* A_tile[256];
+  __shared__ __half* B_tile[256];
+  size_t iin_start = blockIdx.x * 16 % N;
+  size_t iim_start = blockIdx.x * 16 / N;
+  size_t iin = threadIdx.x % 16;
+  size_t iim = threadIdx.x / 16;
+  for (size_t i = 0; i < K; i += 16) {
+    A_tile[iim * 16 + iin] = A[(iim_start + iim) * K + (i + iin)];
+    B_tile[iin * 16 + iim] = A[(iin_start + iin) * K + (i + iim)];
+    __syncthreads();
+    for(size_t j = 0; j < 16; j++) {
+      __hadd(C[(iim_start + iim) * K + (iin_start + iin)], __hmul(A_tile[iim * 16 + j], B_tile[iin * 16 + j]));
+    }
+    __syncthreads();
+  }
 }
 
 // C += A @ B.t()
