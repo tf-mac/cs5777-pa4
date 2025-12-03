@@ -49,7 +49,7 @@ __global__ void sgemm_p1_kernel(
   }
 
   for(size_t i = 0; i < K; ++i) {
-    C[iim * N + iin] += A[iim * K + i] * B[i * K + iin];
+    C[iim * N + iin] += A[iim * K + i] * B[iin * K + i];
   }
 }
 
@@ -118,7 +118,7 @@ __global__ void hgemm_p1_kernel(
   }
 
   for(size_t i = 0; i < K; ++i) {
-    C[iim * N + iin] = __hadd(C[iim * N + iin], __hmul(A[iim * K + i], B[i * K + iin]));
+    C[iim * N + iin] = __hadd(C[iim * N + iin], __hmul(A[iim * K + i], B[iin * K + i]));
   }
 }
 
@@ -179,13 +179,18 @@ __global__ void sgemm_p2_kernel(
 ) {
   __shared__ float* A_tile[256];
   __shared__ float* B_tile[256];
-  float acc = 0;
   size_t iin_start = blockIdx.x * 16 % N;
   size_t iim_start = blockIdx.x * 16 / N;
-  size_t stages = K / 16;
-  for (size_t i = 0; i < stages; ++i) {
-    // size_t
-    // A_tile[iin_start + threadIdx.x  ]
+  size_t iin = threadIdx.x % 16;
+  size_t iim = threadIdx.x / 16;
+  for (size_t i = 0; i < K; i += 16) {
+    A_tile[iim * 16 + iin] = A[(iim_start + iim) * K + (i + iin)];
+    B_tile[iin * 16 + iim] = A[(iin_start + iin) * K + (i + iim)];
+    __syncthreads();
+    for(size_t j = 0; j < 16; j++) {
+      C[(iim_start + iim) * K + (iin_start + iin)] += A_tile[iim * 16 + j] * B_tile[iin * 16 + j];
+    }
+    __syncthreads();
   }
 }
 
