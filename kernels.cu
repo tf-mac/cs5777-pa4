@@ -395,7 +395,7 @@ __global__ void hgemm_p3_kernel(
   wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::col_major> b;
   wmma::fragment<wmma::accumulator, 16, 16, 16, __half> c;
 
-  wmma::fill_fragment(c, 0.0f);
+  wmma::fill_fragment(c, (__half) 0.0f);
   wmma::load_matrix_sync(a, A, K);
   wmma::load_matrix_sync(b, B, K);
 
