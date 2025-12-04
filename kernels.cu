@@ -181,11 +181,12 @@ __global__ void sgemm_p2_kernel(
   __shared__ float B_tile[256];
   size_t iin_start = blockIdx.y * 16;
   size_t iim_start = blockIdx.x * 16;
-  size_t iin = threadIdx.x % 16;
-  size_t iim = threadIdx.x / 16;
+  size_t iin = threadIdx.y;
+  size_t iim = threadIdx.x;
+  
   for (size_t i = 0; i < K; i += 16) {
     A_tile[iim * 16 + iin] = A[(iim_start + iim) * K + (i + iin)];
-    B_tile[iim * 16 + iin] = B[(iin_start + iin) * K + (i + iim)];
+    B_tile[iin * 16 + iim] = B[(iin_start + iin) * K + (i + iim)];
     __syncthreads();
     for(size_t j = 0; j < 16; j++) {
       C[(iim_start + iim) * N + (iin_start + iin)] += A_tile[iim * 16 + j] * B_tile[iin * 16 + j];
@@ -257,11 +258,11 @@ __global__ void hgemm_p2_kernel(
   __shared__ __half B_tile[256];
   size_t iin_start = blockIdx.y * 16;
   size_t iim_start = blockIdx.x * 16;
-  size_t iin = threadIdx.x % 16;
-  size_t iim = threadIdx.x / 16;
+  size_t iin = threadIdx.y;
+  size_t iim = threadIdx.x;
   for (size_t i = 0; i < K; i += 16) {
     A_tile[iim * 16 + iin] = A[(iim_start + iim) * K + (i + iin)];
-    B_tile[iim * 16 + iin] = B[(iin_start + iin) * K + (i + iim)];
+    B_tile[iin * 16 + iim] = B[(iin_start + iin) * K + (i + iim)];
     __syncthreads();
     for(size_t j = 0; j < 16; j++) {
       C[(iim_start + iim) * N + (iin_start + iin)] = __hadd(C[(iim_start + iim) * N + (iin_start + iin)], __hmul(A_tile[iim * 16 + j], B_tile[iin * 16 + j]));
@@ -395,7 +396,7 @@ __global__ void hgemm_p3_kernel(
   wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::col_major> b;
   wmma::fragment<wmma::accumulator, 16, 16, 16, __half> c;
 
-  wmma::fill_fragment(c, 0.0f);
+  wmma::fill_fragment(c, __float2half(0.0f));
   size_t warpId = threadIdx.x / warpSize; // warp inside a block, 16 / 2 = 8 warps per block, 2 rows per warp
   size_t iin_start = blockIdx.y * 16;
   size_t iim_start = blockIdx.x * 16;
