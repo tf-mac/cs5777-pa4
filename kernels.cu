@@ -391,8 +391,8 @@ __global__ void hgemm_p3_kernel(
   const size_t N,
   const size_t K
 ) {
-  wmma::fragment<wmma::matrix_a, 16, 16, 16, __half, wmma::mem_row_major> a;
-  wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::mem_col_major> b;
+  wmma::fragment<wmma::matrix_a, 16, 16, 16, __half, wmma::row_major> a;
+  wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::col_major> b;
   wmma::fragment<wmma::accumulator, 16, 16, 16, __half> c;
 
   wmma::fill_fragment(c, 0);
@@ -463,8 +463,8 @@ __global__ void hgemm_p4_kernel(
   const size_t N,
   const size_t K
 ) {
-  wmma::fragment<wmma::matrix_a, 16, 16, 16, __half, wmma::mem_row_major> a;
-  wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::mem_col_major> b;
+  wmma::fragment<wmma::matrix_a, 16, 16, 16, __half, wmma::row_major> a;
+  wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::col_major> b;
   wmma::fragment<wmma::accumulator, 16, 16, 16, float> c;
 
   wmma::fill_fragment(c, 0);
