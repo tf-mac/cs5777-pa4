@@ -179,8 +179,8 @@ __global__ void sgemm_p2_kernel(
 ) {
   __shared__ float A_tile[256];
   __shared__ float B_tile[256];
-  size_t iin_start = blockIdx.x * 16;
-  size_t iim_start = blockIdx.y * 16;
+  size_t iin_start = blockIdx.y * 16;
+  size_t iim_start = blockIdx.x * 16;
   size_t iin = threadIdx.x % 16;
   size_t iim = threadIdx.x / 16;
   for (size_t i = 0; i < K; i += 16) {
@@ -255,8 +255,8 @@ __global__ void hgemm_p2_kernel(
 ) {
   __shared__ __half A_tile[256];
   __shared__ __half B_tile[256];
-  size_t iin_start = blockIdx.x * 16;
-  size_t iim_start = blockIdx.y * 16;
+  size_t iin_start = blockIdx.y * 16;
+  size_t iim_start = blockIdx.x * 16;
   size_t iin = threadIdx.x % 16;
   size_t iim = threadIdx.x / 16;
   for (size_t i = 0; i < K; i += 16) {
