@@ -185,7 +185,7 @@ __global__ void sgemm_p2_kernel(
   size_t iim = threadIdx.x / 16;
   for (size_t i = 0; i < K; i += 16) {
     A_tile[iim * 16 + iin] = A[(iim_start + iim) * K + (i + iin)];
-    B_tile[iin * 16 + iim] = B[(iin_start + iin) * K + (i + iim)];
+    B_tile[iim * 16 + iin] = B[(iin_start + iin) * K + (i + iim)];
     __syncthreads();
     for(size_t j = 0; j < 16; j++) {
       C[(iim_start + iim) * N + (iin_start + iin)] += A_tile[iim * 16 + j] * B_tile[iin * 16 + j];
