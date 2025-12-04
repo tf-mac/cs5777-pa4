@@ -395,11 +395,16 @@ __global__ void hgemm_p3_kernel(
   wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::col_major> b;
   wmma::fragment<wmma::accumulator, 16, 16, 16, __half> c;
 
-  wmma::fill_fragment(c, (__half) 0.0f);
-  wmma::load_matrix_sync(a, A, K);
-  wmma::load_matrix_sync(b, B, K);
-
-  wmma::mma_sync(c, a, b, c);
+  wmma::fill_fragment(c, 0.0f);
+  size_t warpId = threadIdx.x / warpSize; // warp inside a block, 16 / 2 = 8 warps per block, 2 rows per warp
+  size_t iin_start = blockIdx.y * 16;
+  size_t iim_start = blockIdx.x * 16;
+  for(size_t i = 0; i < K; i += 16) {
+    wmma::load_matrix_sync(a, A + (iin_start + warpId) * M + i, K);
+    wmma::load_matrix_sync(b, B + (iim_start + warpId) * N + i, K);
+    wmma::mma_sync(c, a, b, c);
+  }
+  
 
   wmma::store_matrix_sync(C, c, N, wmma::mem_row_major);
 }
@@ -467,11 +472,15 @@ __global__ void hgemm_p4_kernel(
   wmma::fragment<wmma::matrix_b, 16, 16, 16, __half, wmma::col_major> b;
   wmma::fragment<wmma::accumulator, 16, 16, 16, float> c;
 
-  wmma::fill_fragment(c, 0.0f);
-  wmma::load_matrix_sync(a, A, K);
-  wmma::load_matrix_sync(b, B, K);
-
-  wmma::mma_sync(c, a, b, c);
+  size_t warpId = threadIdx.x / warpSize; // warp inside a block, 16 / 2 = 8 warps per block, 2 rows per warp
+  size_t iin_start = blockIdx.y * 16;
+  size_t iim_start = blockIdx.x * 16;
+  for(size_t i = 0; i < K; i += 16) {
+    wmma::load_matrix_sync(a, A + (iin_start + warpId) * M + i, K);
+    wmma::load_matrix_sync(b, B + (iim_start + warpId) * N + i, K);
+    wmma::mma_sync(c, a, b, c);
+  }
+  
 
   wmma::store_matrix_sync(C, c, N, wmma::mem_row_major);
 }
