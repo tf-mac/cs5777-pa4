@@ -400,13 +400,13 @@ __global__ void hgemm_p3_kernel(
   size_t iin_start = blockIdx.y * 16;
   size_t iim_start = blockIdx.x * 16;
   for(size_t i = 0; i < K; i += 16) {
-    wmma::load_matrix_sync(a, A + (iin_start) * K + i, K);
-    wmma::load_matrix_sync(b, B + (iim_start) * K + i, K);
+    wmma::load_matrix_sync(a, A + (iim_start) * K + i, K);
+    wmma::load_matrix_sync(b, B + (iin_start) * K + i, K);
     wmma::mma_sync(c, a, b, c);
   }
   
 
-  wmma::store_matrix_sync(C + iin_start * N + iim_start, c, N, wmma::mem_row_major);
+  wmma::store_matrix_sync(C + iim_start * N + iin_start, c, N, wmma::mem_row_major);
 }
 
 // C += A @ B.t()
@@ -476,13 +476,13 @@ __global__ void hgemm_p4_kernel(
   size_t iin_start = blockIdx.y * 16;
   size_t iim_start = blockIdx.x * 16;
   for(size_t i = 0; i < K; i += 16) {
-    wmma::load_matrix_sync(a, A + (iin_start) * K + i, K);
-    wmma::load_matrix_sync(b, B + (iim_start) * K + i, K);
+    wmma::load_matrix_sync(a, A + (iim_start) * K + i, K);
+    wmma::load_matrix_sync(b, B + (iin_start) * K + i, K);
     wmma::mma_sync(c, a, b, c);
   }
   
 
-  wmma::store_matrix_sync(C + iin_start * N + iim_start, c, N, wmma::mem_row_major);
+  wmma::store_matrix_sync(C + iim_start * N + iin_start, c, N, wmma::mem_row_major);
 }
 
 // C += A @ B.t()
